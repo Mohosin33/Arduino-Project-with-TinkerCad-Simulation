@@ -1,0 +1,111 @@
+#include <LiquidCrystal.h>
+
+// LCD: RS, E, D4, D5, D6, D7
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
+#define BUZZER 4
+#define LDR A0
+#define LED 5
+
+const int lightThreshold = 500; // Adjust as needed
+
+void setup() {
+  pinMode(BUZZER, OUTPUT);
+  pinMode(LED, OUTPUT);
+  lcd.begin(16, 2);
+  lcd.print("Checking Light...");
+  delay(2000);
+}
+
+void loop() {
+  // Keep checking light until it's bright enough
+  while (analogRead(LDR) < lightThreshold) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Room is Dark");
+    lcd.setCursor(0, 1);
+    lcd.print("Light on first");
+    delay(1000);
+  }
+
+  // Light is sufficient
+  lcd.clear();
+  lcd.print("Get Started");
+  buzz(1);
+  delay(2000);
+
+  // Begin session cycle
+  runCycle();
+
+  // After cycle complete, stop here
+  while (true);
+}
+
+void runCycle() {
+  // 1. Focus
+  countdown("Focus Time", 15);
+
+  // 2. Break: Drink Water
+  alertAndCountdown("Drink Water", 5);
+
+  // 3. Get Started
+  countdown("Focus Time", 15);
+
+  // 4. Break: Rest
+  alertAndCountdown("Take Rest", 5);
+
+  // 5. Get Started
+  countdown("Focus Time", 15);
+
+  // 6. Break: Refocus
+  alertAndCountdown("Refocus", 5);
+
+  // End
+  lcd.clear();
+  lcd.print("Cycle Complete!");
+  buzz(2);
+  lcd.setCursor(0, 1);
+  lcd.print("Well done!");
+}
+
+// Countdown phase
+void countdown(String message, int seconds) {
+  for (int i = seconds; i > 0; i--) {
+    lcd.clear();
+    lcd.print(message);
+    lcd.setCursor(0, 1);
+    lcd.print("Time Left: ");
+    lcd.print(i);
+    lcd.print("s");
+    delay(1000);
+  }
+  buzz(1);
+}
+
+// Break + countdown
+void alertAndCountdown(String message, int seconds) {
+  buzz(1);
+  for (int i = seconds; i > 0; i--) {
+    lcd.clear();
+    lcd.print(message);
+    lcd.setCursor(0, 1);
+    lcd.print("Time Left: ");
+    lcd.print(i);
+    lcd.print("s");
+    delay(1000);
+  }
+  buzz(1);
+}
+
+// Buzzer helper
+void buzz(int times) {
+  for (int i = 0; i < times; i++) {
+    digitalWrite(BUZZER, HIGH);
+    digitalWrite(LED, HIGH);      // Turn on LED with buzzer
+    delay(300);
+    digitalWrite(BUZZER, LOW);
+    digitalWrite(LED, LOW);       // Turn off LED with buzzer
+    delay(200);
+  }
+}
+
